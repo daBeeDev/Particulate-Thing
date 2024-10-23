@@ -4,6 +4,7 @@ import logging
 import time
 import csv
 import sys
+import os
 from collections import deque
 from pms5003 import PMS5003, ReadTimeoutError
 
@@ -30,6 +31,9 @@ recent_readings_1h = deque()
 recent_readings_10m = deque()
 recent_readings_5m = deque()
 recent_readings_1m = deque()
+
+# set time
+start_time = time.time()
 
 # Open the CSV file for appending readings
 with open(file_name, mode='a', newline='') as file:
@@ -128,21 +132,30 @@ with open(file_name, mode='a', newline='') as file:
                     pm10_mean_1h = round(sum([r['pm10'] for r in recent_readings_1h]) / len(recent_readings_1h), 2)
                     pm10_max_1h = max([r['pm10'] for r in recent_readings_1h])
 
-                # Screen
+                # Clear the screen and print updated values
                 sys.stdout.write("\033[H\033[J")  # ANSI escape sequence to clear screen
                 sys.stdout.write(f"                        Particulate Sensor!\n")
                 sys.stdout.write(f"\n")
                 sys.stdout.write(f"\n")
                 sys.stdout.write(f"\n")
-                sys.stdout.write(f"Sensor Readings  - PM1.0: {pm1_0}       PM2.5: {pm2_5}        PM10: {pm10}\n")
+                sys.stdout.write(f"Live Sensor Readings  -  PM1.0: {pm1_0}       PM2.5: {pm2_5}        PM10: {pm10}\n")
                 sys.stdout.write(f"\n")
                 sys.stdout.write(f"\n")
-                sys.stdout.write(f"1-min Mean/Max   - PM1.0: {pm1_0_mean_1m}/{pm1_0_max_1m}, PM2.5:  {pm2_5_mean_1m}/{pm2_5_max_1m}, PM10: {pm10_mean_1m}/{pm10_max_1m}\n")
-                sys.stdout.write(f"5-min Mean/Max   - PM1.0: {pm1_0_mean_5m}/{pm1_0_max_5m}, PM2.5:  {pm2_5_mean_5m}/{pm2_5_max_5m}, PM10: {pm10_mean_5m}/{pm10_max_5m}\n")
-                sys.stdout.write(f"10-min Mean/Max  - PM1.0: {pm1_0_mean_10m}/{pm1_0_max_10m}, PM2.5:  {pm2_5_mean_10m}/{pm2_5_max_10m}, PM10: {pm10_mean_10m}/{pm10_max_10m}\n")
+                sys.stdout.write(f" (Mean/Max)  1   Min  -  PM1.0: {pm1_0_mean_1m:5.2f} /{pm1_0_max_1m:4.0f} " f"| PM2.5:  {pm2_5_mean_1m:5.2f} /{pm2_5_max_1m:4.0f} " f"| PM10: {pm10_mean_1m:5.2f} /{pm10_max_1m:4.0f}\n")
+                sys.stdout.write(f" (Mean/Max)  5   Min  -  PM1.0: {pm1_0_mean_5m:5.2f} /{pm1_0_max_5m:4.0f} " f"| PM2.5:  {pm2_5_mean_5m:5.2f} /{pm2_5_max_5m:4.0f} " f"| PM10: {pm10_mean_5m:5.2f} /{pm10_max_5m:4.0f}\n")
+                sys.stdout.write(f" (Mean/Max)  10  Min  -  PM1.0: {pm1_0_mean_10m:5.2f} /{pm1_0_max_10m:4.0f} " f"| PM2.5:  {pm2_5_mean_10m:5.2f} /{pm2_5_max_10m:4.0f} " f"| PM10: {pm10_mean_10m:5.2f} /{pm10_max_10m:4.0f}\n")
                 sys.stdout.write(f"\n")
-                sys.stdout.write(f"1-hour Mean/Max  - PM1.0: {pm1_0_mean_1h}/{pm1_0_max_1h}, PM2.5:  {pm2_5_mean_1h}/{pm2_5_max_1h}, PM10: {pm10_mean_1h}/{pm10_max_1h}\n")
-                sys.stdout.write(f"12-hour Mean/Max - PM1.0: {pm1_0_mean_12h}/{pm1_0_max_12h}, PM2.5:  {pm2_5_mean_12h}/{pm2_5_max_12h}, PM10: {pm10_mean_12h}/{pm10_max_12h}\n")
+                sys.stdout.write(f" (Mean/Max)  1  Hour  -  PM1.0: {pm1_0_mean_1h:5.2f} /{pm1_0_max_1h:4.0f} " f"| PM2.5:  {pm2_5_mean_1h:5.2f} /{pm2_5_max_1h:4.0f} " f"| PM10: {pm10_mean_1h:5.2f} /{pm10_max_1h:4.0f}\n")
+                sys.stdout.write(f" (Mean/Max)  12 Hour  -  PM1.0: {pm1_0_mean_12h:5.2f} /{pm1_0_max_12h:4.0f} " f"| PM2.5:  {pm2_5_mean_12h:5.2f} /{pm2_5_max_12h:4.0f} " f"| PM10: {pm10_mean_12h:5.2f} /{pm10_max_12h:4.0f}\n")
+                
+                # Calculate elapsed time and print it at the bottom-right corner
+                elapsed_time = time.time() - start_time
+                elapsed_str = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+
+                # Move cursor to bottom-right corner (position depends on your terminal size)
+                sys.stdout.write(f"\033[999;0H")  # Moves to bottom of the terminal (adjust based on terminal size)
+                sys.stdout.write(f"Runtime: {elapsed_str}")  # Print the runtime
+
                 sys.stdout.flush()  # Forcefully flush the output buffer
 
                 # Write the data to the CSV file
